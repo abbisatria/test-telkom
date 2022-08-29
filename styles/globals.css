@@ -11,6 +11,52 @@ a {
   text-decoration: none;
 }
 
+@media (min-width: 992px) {
+  .px-8 {
+    padding-right: 10rem !important;
+    padding-left: 10rem !important;
+  }
+  .input-search {
+    width: 20%;
+  }
+}
+
+.react-datepicker-popper {
+  z-index: 3 !important;
+}
+
+.btn-generate {
+  background-color: #E0E7FF !important;
+  color: #4338CA !important;
+  border-color: #E0E7FF !important;
+}
+
+.clear-list-user {
+  text-align: center;
+  position: relative;
+}
+
+.clear-list-user hr {
+  position: absolute;
+  width: 100%;
+  top: 4px;
+  z-index: -9999;
+}
+
+.clear-list-user .btn.disabled {
+  opacity: 1;
+  background-color: white;
+}
+
+.card-item .card-footer .icon {
+  position: relative;
+}
+
+.card-item .card-footer .icon .divider {
+  position: absolute;
+  bottom: 49px;
+}
+
 * {
   box-sizing: border-box;
 }
