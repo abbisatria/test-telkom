@@ -1,14 +1,19 @@
 import Head from 'next/head'
 import Image from 'next/image'
-import { Button, Card, CardBody, CardFooter, Col, Container, FormGroup, FormText, Input, InputGroup, InputGroupText, Label, Row } from 'reactstrap'
+import { Button, Card, CardBody, CardFooter, Col, Container, Form, FormGroup, FormText, Input, InputGroup, InputGroupText, Label, Row } from 'reactstrap'
 import Empty from '../assets/img/empty.svg'
 import IcSearch from '../assets/img/ic-search.svg'
 import IcUser from '../assets/img/ic-user.svg'
 import Divider from '../assets/img/divider.svg'
 import { useState } from 'react'
 import ReactDatePicker from 'react-datepicker'
+import { useDispatch, useSelector } from 'react-redux'
+import { listState, setListState, resetListState } from '../store/listSlice'
 
 export default function Home() {
+
+  const listStateData = useSelector(listState);
+  const dispatch = useDispatch();
 
   const [fullName, setFullName] = useState({
     value: '',
@@ -57,7 +62,11 @@ export default function Home() {
     }
     if (type === 'phone') {
       const validate = /^(^\+62|62|^08)(\d{3,4}-?){2}\d{3,4}$/g
-      setPhoneNumber({ value, valid: validate.test(`+62${value}`) })
+      if (value[0] === '0') {
+        setPhoneNumber({ value, valid: false })
+      } else {
+        setPhoneNumber({ value, valid: validate.test(`+62${value}`) })
+      }
     }
     if (type === 'password') {
       const validate = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})")
@@ -92,6 +101,21 @@ export default function Home() {
     })
   }
 
+  const submit = (e) => {
+    e.preventDefault()
+    const payload = {
+      fullName,
+      email,
+      dateOfBirth: date,
+      address,
+      phoneNumber,
+      password
+    }
+    dispatch(setListState([...listStateData, payload]))
+    resetValue()
+  }
+
+
   return (
     <div>
       <Head>
@@ -101,12 +125,12 @@ export default function Home() {
       </Head>
 
       <Container>
-        <div className='px-8 pt-5'>
+        <Form className='px-8 pt-5' onSubmit={submit}>
           <h5>Personal Information</h5>
           <p>This information will be displayed publicly so be careful what you share. </p>
           <FormGroup>
             <Label>Full Name</Label>
-            <Input className='w-50' placeholder='Your Name' value={fullName.value} invalid={fullName.valid === false} valid={fullName.valid} onChange={(e) => onChangeValue('fullName', e.target.value)}  />
+            <Input className='w-50' placeholder='Your Name' value={fullName.value} invalid={fullName.valid === false} valid={fullName.valid} onChange={(e) => onChangeValue('fullName', e.target.value)} />
           </FormGroup>
           <FormGroup>
             <Label>Email address</Label>
@@ -114,7 +138,7 @@ export default function Home() {
           </FormGroup>
           <FormGroup>
             <Label>Date of Birth</Label>
-            <ReactDatePicker className={date.valid === false ? 'form-control w-50 is-invalid' : date.valid ? 'form-control w-50 is-valid' : 'form-control w-50'} selected={date.value} onChange={(date) => setDate({ value: date, valid: '' })} placeholderText="dd/mm/yyyy" onBlur={() => {
+            <ReactDatePicker className={date.valid === false ? 'form-control w-50 is-invalid' : date.valid ? 'form-control w-50 is-valid' : 'form-control w-50'} selected={date.value} onChange={(date) => setDate({ value: date, valid: true })} placeholderText="dd/mm/yyyy" onBlur={() => {
               if (date.value) {
                 setDate({ value: date.value, valid: true })
               } else {
@@ -145,18 +169,18 @@ export default function Home() {
           <hr />
           <Row className='mb-5'>
             <Col xs={6} className='pe-0'>
-              <Button outline className='me-2'>Cancel</Button>
-              <Button color='primary'>Submit</Button>
+              <Button outline type='button' className='me-2' onClick={() => resetValue()}>Cancel</Button>
+              <Button color='primary' type='submit' disabled={!fullName.valid || !email.valid || !date.valid || !address.valid || !phoneNumber.valid || !password.valid}>Submit</Button>
             </Col>
             <Col xs={6} className='d-flex justify-content-end ps-0'>
-              <Button color='primary' className='btn-generate'>
+              <Button color='primary' className='btn-generate' type='button'>
                 Auto Generate
               </Button>
             </Col>
           </Row>
-        </div>
+        </Form>
         <div className='clear-list-user'>
-          <Button color='light' disabled>
+          <Button color='light' disabled={listStateData.length === 0} className={listStateData.length === 0 ? '' : 'text-danger'} type='button' onClick={() => dispatch(resetListState())}>
             Clear All List User
           </Button>
           <hr />
@@ -170,11 +194,13 @@ export default function Home() {
               <Input placeholder="Search Anything" />
             </InputGroup>
           </div>
-          <div className='text-center'>
-            <Image src={Empty} alt='Empty' />
-            <p>No List User</p>
-          </div>
-          {/* ::Todo Card & Redux */}
+          {listStateData.length === 0 && (
+            <div className='text-center'>
+              <Image src={Empty} alt='Empty' />
+              <p>No List User</p>
+            </div>
+          )}
+          {/* ::Todo Card */}
           {/* <Row>
             <Col md={3}>
               <Card className='border-0 shadow card-item'>
